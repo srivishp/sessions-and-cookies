@@ -8,24 +8,37 @@ const errorController = require("./controllers/error");
 const app = express();
 const User = require("./models/user");
 const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session);
+const MONGODB_URI =
+  "mongodb+srv://srivishp:Mongo2026@cluster0.1p7s5t7.mongodb.net/shop?appName=Cluster0";
 
 app.set("view engine", "ejs");
 app.set("views", "views");
 
+const store = new MongoDBStore({
+  uri: MONGODB_URI,
+  collection: "sessions",
+});
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
-//const User = require("./models/user");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
-
-// #Creating a middleware to fetch a user and use it in requests
-//-> This is run only for incoming requests & not during npm start
+app.use(
+  session({
+    secret: "mysecret",
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+  })
+);
 
 app.use((req, res, next) => {
-  User.findById("6919cd45d0ee26caa306dc6c") // User created in MongoDB
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id) // Find the user in the database using the user model provided by mongoose
     .then((user) => {
-      // handling the user's cart details along with his name and email
       req.user = user;
       next();
     })
@@ -35,15 +48,10 @@ app.use((req, res, next) => {
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
-app.use(
-  session({ secret: "mysecret", resave: false, saveUninitialized: false })
-);
 app.use(errorController.get404);
 
 mongoose
-  .connect(
-    "mongodb+srv://srivishp:Mongo2026@cluster0.1p7s5t7.mongodb.net/shop?appName=Cluster0"
-  )
+  .connect(MONGODB_URI)
   .then(() => {
     User.findOne().then((user) => {
       if (!user) {

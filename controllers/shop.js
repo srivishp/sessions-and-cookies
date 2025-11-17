@@ -10,7 +10,7 @@ exports.getProducts = (req, res, next) => {
         path: "/products",
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: req.isLoggedIn,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -30,7 +30,7 @@ exports.getProduct = (req, res, next) => {
         path: "/products",
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: req.isLoggedIn,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -45,7 +45,7 @@ exports.getIndex = (req, res, next) => {
         path: "/",
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: req.isLoggedIn,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -58,15 +58,15 @@ exports.getCart = (req, res, next) => {
     .populate("cart.items.productId")
     // In previous versions of Mongoose, populate doesn't return a promise, so we chain it with execPopulate()
     //.execPopulate()
-    .then(() => {
-      const products = req.user.cart.items;
+    .then((user) => {
+      const products = user.cart.items;
       res.render("shop/cart", {
         path: "/cart",
         pageTitle: "Your Cart",
         products: products,
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: req.isLoggedIn,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -95,38 +95,40 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 
 exports.postOrder = (req, res, next) => {
-  req.user
-    .populate("cart.items.productId")
-    .then((user) => {
-      const products = user.cart.items.map((i) => {
-        // ._doc is a mongoose thing to get the actual data object
-        return { quantity: i.quantity, product: { ...i.productId._doc } };
-      });
-      const order = new Order({
-        user: {
-          name: req.user.name,
-          userId: req.user,
-        },
-        products: products,
-      });
-      return order.save();
-    })
-    .then(() => {
-      return req.user.clearCart();
-    })
-    .then(() => {
-      return res.redirect("/orders");
-    })
-    .catch((err) => console.log(err));
+  req.user &&
+    req.user
+      .populate("cart.items.productId")
+      .then((user) => {
+        const products = user.cart.items.map((i) => {
+          // ._doc is a mongoose thing to get the actual data object
+          return { quantity: i.quantity, product: { ...i.productId._doc } };
+        });
+        const order = new Order({
+          user: {
+            name: req.user.name,
+            userId: req.user,
+          },
+          products: products,
+        });
+        return order.save();
+      })
+      .then(() => {
+        return req.user.clearCart();
+      })
+      .then(() => {
+        return res.redirect("/orders");
+      })
+      .catch((err) => console.log(err));
 };
 
 exports.getOrders = (req, res, next) => {
   Order.find({ "user.userId": req.user._id })
     .then((orders) => {
       res.render("shop/orders", {
-        orders: orders,
         path: "/orders",
         pageTitle: "Your Orders",
+        orders: orders,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));

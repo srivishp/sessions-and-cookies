@@ -1,5 +1,3 @@
-const mongodb = require("mongodb");
-const ObjectId = mongodb.ObjectId;
 const Product = require("../models/product");
 
 exports.getAddProduct = (req, res, next) => {
@@ -9,7 +7,8 @@ exports.getAddProduct = (req, res, next) => {
     editing: false,
     // For load of every page we need the user to be logged in
     // So, we check for the login status on all render() calls
-    isAuthenticated: req.isLoggedIn,
+    //isAuthenticated: req.isLoggedIn ? req.isLoggedIn : null,
+    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -59,7 +58,7 @@ exports.getEditProduct = (req, res, next) => {
         product: product,
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: req.isLoggedIn,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -104,7 +103,7 @@ exports.getProducts = (req, res, next) => {
         path: "/admin/products",
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: req.isLoggedIn,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => {
