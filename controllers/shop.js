@@ -10,7 +10,7 @@ exports.getProducts = (req, res, next) => {
         path: "/products",
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: isLoggedIn,
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -30,7 +30,7 @@ exports.getProduct = (req, res, next) => {
         path: "/products",
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: isLoggedIn,
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -45,7 +45,7 @@ exports.getIndex = (req, res, next) => {
         path: "/",
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: isLoggedIn,
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -66,7 +66,7 @@ exports.getCart = (req, res, next) => {
         products: products,
         // For load of every page we need the user to be logged in
         // So, we check for the login status on all render() calls
-        isAuthenticated: isLoggedIn,
+        isAuthenticated: req.isLoggedIn,
       });
     })
     .catch((err) => console.log(err));

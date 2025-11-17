@@ -7,6 +7,8 @@ const bodyParser = require("body-parser");
 const errorController = require("./controllers/error");
 const app = express();
 const User = require("./models/user");
+const session = require("express-session");
+
 app.set("view engine", "ejs");
 app.set("views", "views");
 
@@ -33,6 +35,9 @@ app.use((req, res, next) => {
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
+app.use(
+  session({ secret: "mysecret", resave: false, saveUninitialized: false })
+);
 app.use(errorController.get404);
 
 mongoose
