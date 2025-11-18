@@ -25,7 +25,7 @@ exports.getLogin = (req, res, next) => {
 exports.postLogin = (req, res, next) => {
   console.log(req.session);
 
-  //-> Storing a session in MongoDB.
+  //> Storing a session in MongoDB.
   //? A cookie and session are mapped everytime a user logs in
   User.findById("6919cd45d0ee26caa306dc6c") // User created in MongoDB
     .then((user) => {
